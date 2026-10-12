@@ -144,9 +144,6 @@ class ICloudLiteFlow(ConfigFlow, domain=DOMAIN):
 
 
 class ICloudLiteOptions(OptionsFlow):
-    def __init__(self, config_entry: ConfigEntry) -> None:
-        self.config_entry = config_entry
-
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Display options menu when clicking Configure."""
         return self.async_show_menu(
