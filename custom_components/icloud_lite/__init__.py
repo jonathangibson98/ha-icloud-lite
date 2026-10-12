@@ -30,7 +30,11 @@ def login(hass: HomeAssistant, username: str, password: str) -> PyiCloudService:
 
 def fetch_devices(api: PyiCloudService) -> dict[str, dict[str, Any]]:
     """Refresh once and return {device_id: info} for every device (blocking)."""
-    api.devices.refresh_client()
+    try:
+        api.devices.update()
+    except Exception as err:
+        _LOGGER.debug("Could not force refresh FindMyiPhone devices: %s", err)
+
     result: dict[str, dict[str, Any]] = {}
     for device in api.devices:
         data = device.data
