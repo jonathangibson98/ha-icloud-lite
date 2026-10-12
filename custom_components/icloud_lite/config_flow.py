@@ -1,6 +1,7 @@
 """Config + options flow for iCloud Lite."""
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import voluptuous as vol
@@ -15,10 +16,12 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import callback
-from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import selector
 
 from . import fetch_devices, login
 from .const import CONF_DEVICES, CONF_INTERVAL, DEFAULT_INTERVAL, DOMAIN
+
+_LOGGER = logging.getLogger(__name__)
 
 INTERVAL_VALIDATOR = vol.All(vol.Coerce(int), vol.Range(min=1, max=60))
 
@@ -34,7 +37,7 @@ class ICloudLiteFlow(ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
-        return ICloudLiteOptions()
+        return ICloudLiteOptions(config_entry)
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         errors: dict[str, str] = {}
@@ -104,7 +107,15 @@ class ICloudLiteFlow(ConfigFlow, domain=DOMAIN):
 
     async def async_step_devices(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         found = await self.hass.async_add_executor_job(fetch_devices, self._api)
-        choices = {dev_id: info["name"] for dev_id, info in found.items()}
+        
+        # Build options formatted as "Device Name (Model)"
+        options = []
+        for dev_id, info in found.items():
+            name = info.get("name", "Apple Device")
+            model = info.get("model")
+            label = f"{name} ({model})" if model and model != name else name
+            options.append({"value": dev_id, "label": label})
+
         if user_input is not None:
             return self.async_create_entry(
                 title=self._username,
@@ -114,11 +125,18 @@ class ICloudLiteFlow(ConfigFlow, domain=DOMAIN):
                     CONF_INTERVAL: user_input[CONF_INTERVAL],
                 },
             )
+
         return self.async_show_form(
             step_id="devices",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_DEVICES): cv.multi_select(choices),
+                    vol.Required(CONF_DEVICES, default=[]): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=options,
+                            multiple=True,
+                            mode=selector.SelectSelectorMode.LIST,
+                        )
+                    ),
                     vol.Required(CONF_INTERVAL, default=DEFAULT_INTERVAL): INTERVAL_VALIDATOR,
                 }
             ),
@@ -126,24 +144,62 @@ class ICloudLiteFlow(ConfigFlow, domain=DOMAIN):
 
 
 class ICloudLiteOptions(OptionsFlow):
-    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
-        coordinator = getattr(self.config_entry, "runtime_data", None)
-        if coordinator is None:
-            return self.async_abort(reason="not_loaded")
-        if user_input is not None:
-            return self.async_create_entry(data=user_input)
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        self.config_entry = config_entry
 
-        choices = {dev_id: info["name"] for dev_id, info in coordinator.data.items()}
-        current = [d for d in self.config_entry.options.get(CONF_DEVICES, []) if d in choices]
-        return self.async_show_form(
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Display options menu when clicking Configure."""
+        return self.async_show_menu(
             step_id="init",
+            menu_options=["add_device", "settings"],
+        )
+
+    async def async_step_add_device(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Manage tracked devices."""
+        coordinator = getattr(self.config_entry, "runtime_data", None)
+        if coordinator is None or not coordinator.data:
+            return self.async_abort(reason="not_loaded")
+
+        if user_input is not None:
+            updated_options = {**self.config_entry.options, **user_input}
+            return self.async_create_entry(title="", data=updated_options)
+
+        options = []
+        for dev_id, info in coordinator.data.items():
+            name = info.get("name", "Apple Device")
+            model = info.get("model")
+            label = f"{name} ({model})" if model and model != name else name
+            options.append({"value": dev_id, "label": label})
+
+        current_devices = self.config_entry.options.get(CONF_DEVICES, [])
+
+        return self.async_show_form(
+            step_id="add_device",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_DEVICES, default=current): cv.multi_select(choices),
-                    vol.Required(
-                        CONF_INTERVAL,
-                        default=self.config_entry.options.get(CONF_INTERVAL, DEFAULT_INTERVAL),
-                    ): INTERVAL_VALIDATOR,
+                    vol.Required(CONF_DEVICES, default=current_devices): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=options,
+                            multiple=True,
+                            mode=selector.SelectSelectorMode.LIST,
+                        )
+                    )
+                }
+            ),
+        )
+
+    async def async_step_settings(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Configure polling interval."""
+        if user_input is not None:
+            updated_options = {**self.config_entry.options, **user_input}
+            return self.async_create_entry(title="", data=updated_options)
+
+        current_interval = self.config_entry.options.get(CONF_INTERVAL, DEFAULT_INTERVAL)
+        return self.async_show_form(
+            step_id="settings",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_INTERVAL, default=current_interval): INTERVAL_VALIDATOR,
                 }
             ),
         )
