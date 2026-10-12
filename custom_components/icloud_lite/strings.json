@@ -1,0 +1,37 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "iCloud Lite",
+        "data": { "username": "Apple ID", "password": "Password" }
+      },
+      "2fa": {
+        "title": "Apple 2FA code",
+        "description": "Enter the 6-digit code that just popped up on one of your Apple devices.",
+        "data": { "code": "Code" }
+      },
+      "devices": {
+        "title": "Pick devices to track",
+        "data": { "devices": "Devices", "interval": "Update every (minutes)" }
+      }
+    },
+    "error": {
+      "invalid_auth": "Apple rejected that login",
+      "cannot_connect": "Couldn't reach Apple",
+      "invalid_code": "Wrong or expired code"
+    },
+    "abort": {
+      "already_configured": "That Apple ID is already set up",
+      "reauth_successful": "Re-authenticated"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Tracked devices",
+        "data": { "devices": "Devices", "interval": "Update every (minutes)" }
+      }
+    },
+    "abort": { "not_loaded": "Integration isn't loaded right now. Reload it and try again." }
+  }
+}
