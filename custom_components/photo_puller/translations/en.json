@@ -1,1 +1,13 @@
-yea
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "City Photo",
+        "description": "Adds image entities fed by the City Photo add-on. Click Submit."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "City Photo is already set up."
+    }
+  }
+}
