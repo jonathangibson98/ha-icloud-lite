@@ -10,10 +10,10 @@ from pathlib import Path
 import requests
 
 OPTIONS_FILE = "/data/options.json"
-PHOTO_DIR = Path("/share/city_photo")
+PHOTO_DIR = Path("/share/photo_puller")
 MANIFEST = PHOTO_DIR / "collections.json"
-EVENT_PHOTO = "city_photo_updated"
-EVENT_COLLECTIONS = "city_photo_collections_changed"
+EVENT_PHOTO = "photo_puller_updated"
+EVENT_COLLECTIONS = "photo_puller_collections_changed"
 SUPERVISOR_TOKEN = os.environ.get("SUPERVISOR_TOKEN")
 UNSPLASH_API = "https://api.unsplash.com"
 UNSPLASH_HOURLY_LIMIT = 50
