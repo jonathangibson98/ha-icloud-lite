@@ -34,7 +34,7 @@ async def async_setup_entry(
             if key in known:
                 continue
             known.add(key)
-            new.append(CityPhotoImage(hass, entry, c["slug"], c["name"], c["orientation"]))
+            new.append(PhotoPullerImage(hass, entry, c["slug"], c["name"], c["orientation"]))
         if new:
             async_add_entities(new)
 
@@ -43,7 +43,7 @@ async def async_setup_entry(
     entry.async_on_unload(hass.bus.async_listen(EVENT_PHOTO, _sync))
 
 
-class CityPhotoImage(ImageEntity):
+class PhotoPullerImage(ImageEntity):
     _attr_has_entity_name = True
     _attr_should_poll = False
     _attr_content_type = "image/jpeg"
