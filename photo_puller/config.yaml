@@ -1,0 +1,40 @@
+name: "City Photo"
+version: "1.1.0"
+slug: city_photo
+description: "Pulls random Unsplash photos for any collections you define (city, ocean, whatever) and tells Home Assistant when a new one lands"
+arch:
+  - aarch64
+  - amd64
+  - armv7
+init: false
+startup: services
+boot: auto
+homeassistant_api: true
+map:
+  - share:rw
+options:
+  unsplash_access_key: ""
+  interval_minutes: 60
+  image_size: "regular"
+  collections:
+    - name: "City"
+      search_terms:
+        - "city skyline night"
+        - "european city"
+        - "historic city"
+      orientation: "landscape"
+    - name: "Ocean"
+      search_terms:
+        - "ocean waves"
+        - "beach sunset"
+        - "coastline"
+      orientation: "both"
+schema:
+  unsplash_access_key: password
+  interval_minutes: int(5,1440)
+  image_size: list(full|regular|small)
+  collections:
+    - name: str
+      search_terms:
+        - str
+      orientation: list(landscape|portrait|both)
