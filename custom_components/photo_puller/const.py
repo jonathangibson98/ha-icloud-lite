@@ -1,0 +1,5 @@
+DOMAIN = "city_photo"
+EVENT_PHOTO = "city_photo_updated"
+EVENT_COLLECTIONS = "city_photo_collections_changed"
+PHOTO_DIR = "/share/city_photo"
+MANIFEST_FILE = "collections.json"
