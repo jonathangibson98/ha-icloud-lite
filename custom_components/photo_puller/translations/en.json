@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "title": "City Photo",
-        "description": "Adds image entities fed by the City Photo add-on. Click Submit."
+        "title": "Photo Puller",
+        "description": "Adds image entities fed by the Photo Puller add-on. Click Submit."
       }
     },
     "abort": {
-      "single_instance_allowed": "City Photo is already set up."
+      "single_instance_allowed": "Photo Puller is already set up."
     }
   }
 }
