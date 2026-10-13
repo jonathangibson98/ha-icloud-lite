@@ -1,5 +1,4 @@
 {
-  "name": "iCloud Lite",
-  "render_readme": true,
-  "homeassistant": "2025.1.0"
+  "name": "City Photo",
+  "render_readme": true
 }
